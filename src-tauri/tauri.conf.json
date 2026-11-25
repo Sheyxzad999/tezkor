@@ -1,0 +1,45 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Tezkor",
+  "version": "0.1.0",
+  "identifier": "uz.sheyxzad.tezkor",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "macOSPrivateApi": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "Tezkor",
+        "width": 420,
+        "height": 640,
+        "minWidth": 380,
+        "minHeight": 500,
+        "decorations": false,
+        "transparent": true,
+        "visible": false,
+        "center": true,
+        "skipTaskbar": true,
+        "shadow": true,
+        "windowEffects": { "effects": ["hudWindow", "acrylic"], "state": "active", "radius": 16 }
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; connect-src 'self' ipc: http://ipc.localhost https://cbu.uz https://islomapi.uz https://api.aladhan.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "category": "Productivity",
+    "shortDescription": "Dasturchi, montajchi va har kun uchun vidjetlar",
+    "longDescription": "Timecode kalkulyator, ekrandan rang olish, tizim monitori, CBU valyuta kursi, namoz vaqtlari, clipboard tarixi va dasturchi asboblari — bitta yengil dasturda.",
+    "copyright": "© 2026 Shaxzod",
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
+    "macOS": { "minimumSystemVersion": "10.15" }
+  }
+}

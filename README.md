@@ -1,0 +1,3 @@
+# Tezkor
+
+README tez orada.
