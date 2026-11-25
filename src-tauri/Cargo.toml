@@ -1,6 +1,6 @@
 [package]
 name = "tezkor"
-version = "0.1.0"
+version = "0.2.0"
 description = "Tezkor — dasturchi, montajchi va har kun uchun vidjetlar"
 authors = ["Shaxzod <https://sheyxzad.uz>"]
 license = "MIT"

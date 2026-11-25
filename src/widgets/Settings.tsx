@@ -45,7 +45,7 @@ export default function Settings() {
 
       <Section title={t('set.about')}>
         <p className="about">
-          <b>Tezkor</b> v0.1.0 — open-source, MIT.<br />
+          <b>Tezkor</b> v0.2.0 — open-source, MIT.<br />
           github.com/Sheyxzad999/tezkor<br />
           © 2026 Shaxzod · sheyxzad.uz
         </p>

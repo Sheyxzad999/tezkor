@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useLocal, useNow } from '../hooks.ts';
 import { useT } from '../i18n.ts';
-import { Section, Segmented, CopyButton } from '../components/ui.tsx';
+import { Section, CopyButton } from '../components/ui.tsx';
 import {
   jsonFormat, jsonMinify, base64Encode, base64Decode, urlEncode, urlDecode, jwtDecode,
   parseTimestamp, sha256, uuid, type Result,
 } from '../lib/devtools.ts';
 
 type Tool = 'json' | 'base64' | 'url' | 'jwt' | 'uuid' | 'time' | 'hash';
+const TOOLS: [Tool, string][] = [
+  ['json', 'JSON'], ['base64', 'Base64'], ['url', 'URL'], ['jwt', 'JWT'], ['uuid', 'UUID'], ['time', 'Unix vaqt'], ['hash', 'SHA-256'],
+];
 
 function Output({ r }: { r: Result | null }) {
   if (!r) return null;
@@ -131,23 +134,17 @@ function Json() {
   );
 }
 
-export default function DevTools({ compact }: { compact?: boolean }) {
+export default function DevTools() {
   const { t } = useT();
   const [tool, setTool] = useLocal<Tool>('dev.tool', 'json');
   return (
     <div className="widget dev">
-      <Section title={compact ? undefined : t('dev.title')}>
-        <div className="chips">
-          <Segmented<Tool>
-            value={tool}
-            onChange={setTool}
-            options={[
-              { value: 'json', label: 'JSON' }, { value: 'base64', label: 'Base64' }, { value: 'url', label: 'URL' },
-              { value: 'jwt', label: 'JWT' }, { value: 'uuid', label: 'UUID' }, { value: 'time', label: 'Unix' },
-              { value: 'hash', label: 'SHA-256' },
-            ]}
-          />
-        </div>
+      <div className="chips">
+        {TOOLS.map(([v, l]) => (
+          <button key={v} className={`chip ${tool === v ? 'is-active' : ''}`} onClick={() => setTool(v)}>{l}</button>
+        ))}
+      </div>
+      <Section>
         {tool === 'json' && <Json />}
         {tool === 'base64' && <TwoWay key="b64" enc={base64Encode} dec={base64Decode} labels={[t('dev.encode'), t('dev.decode')]} />}
         {tool === 'url' && <TwoWay key="url" enc={urlEncode} dec={urlDecode} labels={[t('dev.encode'), t('dev.decode')]} />}

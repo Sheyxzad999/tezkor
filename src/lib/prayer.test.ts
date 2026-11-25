@@ -37,3 +37,13 @@ test('formatCountdown', () => {
 test('aladhanUrl', () => {
   assert.match(aladhanUrl(CITIES[0], new Date(2026, 10, 5)), /timings\/05-11-2026\?latitude=41\.2995&longitude=69\.2401&method=3&school=1$/);
 });
+
+import { prayerProgress } from './prayer.ts';
+test('prayerProgress', () => {
+  const at = (h: number, m: number) => new Date(2026, 10, 25, h, m, 0);
+  assert.equal(prayerProgress(T, at(12, 10)), 0, 'peshin boshlandi');
+  assert.ok(Math.abs(prayerProgress(T, at(13, 43.5)) - 0.5) < 0.01, 'peshin–asr oʻrtasi');
+  const night = prayerProgress(T, at(23, 59));
+  assert.ok(night > 0.4 && night < 0.6, 'xufton–bomdod oraligʻi');
+  assert.ok(prayerProgress(T, at(3, 0)) > 0.7, 'tun oxiri');
+});

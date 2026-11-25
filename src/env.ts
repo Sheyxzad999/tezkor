@@ -14,7 +14,13 @@ export const keys = {
 export const shortcut = (...k: string[]) => k.join(keys.join);
 
 export async function invoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
-  if (!isTauri) throw new Error('Bu funksiya faqat Tezkor dasturida ishlaydi');
+  if (!isTauri) {
+    // Brauzerdagi demo rejim
+    const { demoStats } = await import('./demo.ts');
+    if (cmd === 'system_stats') return demoStats() as T;
+    if (cmd === 'pick_color') return '#F0875A' as T;
+    throw new Error('Bu funksiya faqat Tezkor dasturida ishlaydi');
+  }
   return tauriInvoke<T>(cmd, args);
 }
 

@@ -100,3 +100,15 @@ export function formatCountdown(minutes: number) {
   const p = (x: number) => String(x).padStart(2, '0');
   return `${h ? h + ':' : ''}${p(m)}:${p(s)}`;
 }
+
+/** Oldingi namozdan keyingisigacha oʻtgan vaqt ulushi (0–1) */
+export function prayerProgress(times: Record<PrayerKey, string>, now: Date): number {
+  const cur = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+  const mins = PRAYER_KEYS.map((k) => toMinutes(times[k]));
+  const nextIdx = mins.findIndex((m) => m > cur);
+  let start: number, end: number;
+  if (nextIdx === -1) { start = mins[mins.length - 1]; end = mins[0] + 24 * 60; }
+  else if (nextIdx === 0) { start = mins[mins.length - 1] - 24 * 60; end = mins[0]; }
+  else { start = mins[nextIdx - 1]; end = mins[nextIdx]; }
+  return Math.max(0, Math.min(1, (cur - start) / (end - start)));
+}

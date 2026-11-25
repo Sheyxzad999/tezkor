@@ -1,13 +1,13 @@
 <div align="center">
 
-<img src="assets/banner.svg" alt="Tezkor — Mac va Windows uchun vidjetlar" width="100%" />
+<img src="assets/showcase.png" alt="Tezkor — Mac va Windows uchun vidjetlar" width="100%" />
 
 <br/>
 
-[![Release](https://img.shields.io/github/v/release/Sheyxzad999/tezkor?style=flat-square&color=0099b5&label=yuklab%20olish)](https://github.com/Sheyxzad999/tezkor/releases/latest)
+[![Release](https://img.shields.io/github/v/release/Sheyxzad999/tezkor?style=flat-square&color=f0875a&label=yuklab%20olish)](https://github.com/Sheyxzad999/tezkor/releases/latest)
 [![CI](https://img.shields.io/github/actions/workflow/status/Sheyxzad999/tezkor/ci.yml?style=flat-square&label=build)](https://github.com/Sheyxzad999/tezkor/actions)
-![Platforms](https://img.shields.io/badge/macOS%20·%20Windows-1eb53a?style=flat-square)
-![Size](https://img.shields.io/badge/hajmi-~10%20MB-22c3e6?style=flat-square)
+![Platforms](https://img.shields.io/badge/macOS%20·%20Windows-18181b?style=flat-square)
+![Size](https://img.shields.io/badge/hajmi-~5%20MB-c2410c?style=flat-square)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 
 **Bitta yengil dastur — yettita foydali vidjet.**
@@ -33,6 +33,8 @@
 | 🛠 | **Dev asboblari** | Dasturchi | JSON format/minify, Base64, URL encode, **JWT decode**, UUID, Unix vaqt, SHA-256 |
 
 **Tillar:** Oʻzbekcha (lotin va kirill) · Русский · English
+
+**Dizayn:** Liquid Glass uslubidagi shaffof kartalar, Onest shrifti, yorugʻ va qorongʻi mavzu (tizimga moslashadi).
 
 ## ⬇️ Oʻrnatish
 
@@ -76,7 +78,7 @@ Dastur bepul va ochiq kodli, shuning uchun pullik Apple sertifikati bilan imzola
 
 ## 🛠 Texnologiyalar
 
-[Tauri 2](https://tauri.app) (Rust) + React + TypeScript. Electron'dan farqli oʻlaroq, dastur hajmi ~10 MB va juda kam xotira ishlatadi.
+[Tauri 2](https://tauri.app) (Rust) + React + TypeScript. Electron'dan farqli oʻlaroq, dastur hajmi ~5 MB va juda kam xotira ishlatadi.
 
 ```
 src/
@@ -98,6 +100,7 @@ git clone https://github.com/Sheyxzad999/tezkor.git
 cd tezkor
 npm install
 npm test             # mantiqiy testlar
+npm run dev          # interfeysni brauzerda koʻrish (namunaviy maʼlumotlar bilan)
 npm run tauri dev    # dasturni ishga tushirish
 npm run tauri build  # .dmg / .exe yigʻish
 ```

@@ -1,10 +1,12 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Icon } from './Icon.tsx';
 import { copyText } from '../env.ts';
 
-export function Section({ title, right, children }: { title?: ReactNode; right?: ReactNode; children: ReactNode }) {
+export function Section({ title, right, children, plain, className }: {
+  title?: ReactNode; right?: ReactNode; children: ReactNode; plain?: boolean; className?: string;
+}) {
   return (
-    <section className="section">
+    <section className={`section ${plain ? 'plain' : ''} ${className ?? ''}`}>
       {(title || right) && (
         <header className="section-head">
           <h3>{title}</h3>
@@ -67,30 +69,46 @@ export function Empty({ children }: { children: ReactNode }) {
   return <div className="empty">{children}</div>;
 }
 
-/** Halqa koʻrinishidagi koʻrsatkich (0–100) */
-export function Ring({ value, label, sub, size = 92, color = 'var(--accent)' }: {
-  value: number; label: string; sub?: string; size?: number; color?: string;
-}) {
-  const r = (size - 10) / 2;
+/** Halqa koʻrinishidagi koʻrsatkich (0–100), gradientli */
+export function Ring({ value, size = 104, stroke = 9, danger }: { value: number; size?: number; stroke?: number; danger?: boolean }) {
+  const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const v = Math.max(0, Math.min(100, value));
+  const id = useMemo(() => `rg${Math.random().toString(36).slice(2, 7)}`, []);
   return (
-    <div className="ring" style={{ width: size, ['--size' as string]: `${size}px` }}>
+    <div className="ring" style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        <circle cx={size / 2} cy={size / 2} r={r} className="ring-track" />
+        <defs>
+          <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor={danger ? 'var(--danger)' : 'var(--amber)'} />
+            <stop offset="1" stopColor={danger ? 'var(--danger)' : 'var(--accent)'} />
+          </linearGradient>
+        </defs>
+        <circle cx={size / 2} cy={size / 2} r={r} className="ring-track" strokeWidth={stroke} />
         <circle
           cx={size / 2} cy={size / 2} r={r}
           className="ring-value"
-          style={{ stroke: color, strokeDasharray: c, strokeDashoffset: c * (1 - v / 100) }}
+          strokeWidth={stroke}
+          stroke={`url(#${id})`}
+          style={{ strokeDasharray: c, strokeDashoffset: c * (1 - v / 100), filter: `drop-shadow(0 0 6px color-mix(in srgb, ${danger ? 'var(--danger)' : 'var(--accent)'} 45%, transparent))` }}
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </svg>
       <div className="ring-text">
         <b>{Math.round(v)}<small>%</small></b>
-        <span>{label}</span>
       </div>
-      {sub && <div className="ring-sub">{sub}</div>}
     </div>
+  );
+}
+
+/** Sahifa sarlavhasi — sayt uslubidagi katta tipografika */
+export function PageHead({ eyebrow, title, desc }: { eyebrow: string; title: string; desc?: string }) {
+  return (
+    <header className="page-head">
+      <div className="eyebrow">{eyebrow}</div>
+      <h1>{title}</h1>
+      {desc && <p>{desc}</p>}
+    </header>
   );
 }
 
@@ -101,19 +119,19 @@ export function Sparkline({ data, max = 100, height = 40, color = 'var(--accent)
   const w = 300;
   const m = Math.max(max, ...data, 1);
   const pts = data.map((d, i) => `${(i / Math.max(1, data.length - 1)) * w},${height - (d / m) * (height - 2) - 1}`);
-  const id = `g${Math.random().toString(36).slice(2, 7)}`;
+  const id = useMemo(() => `g${Math.random().toString(36).slice(2, 7)}`, []);
   return (
     <svg className="sparkline" viewBox={`0 0 ${w} ${height}`} preserveAspectRatio="none" height={height}>
       <defs>
         <linearGradient id={id} x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0" stopColor={color} stopOpacity="0.35" />
+          <stop offset="0" stopColor={color} stopOpacity="0.32" />
           <stop offset="1" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
       {pts.length > 1 && (
         <>
           <polygon points={`0,${height} ${pts.join(' ')} ${w},${height}`} fill={`url(#${id})`} />
-          <polyline points={pts.join(' ')} fill="none" stroke={color} strokeWidth="1.8" vectorEffect="non-scaling-stroke" />
+          <polyline points={pts.join(' ')} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
         </>
       )}
     </svg>

@@ -1,24 +1,36 @@
 import { useMemo, useState } from 'react';
 import { useLocal } from '../hooks.ts';
 import { useT } from '../i18n.ts';
-import { Section, CopyButton, Segmented } from '../components/ui.tsx';
+import { Section, CopyButton } from '../components/ui.tsx';
 import { Icon } from '../components/Icon.tsx';
 import { FRAME_RATES, getRate, tcToFrames, framesToTc, framesToSeconds, convertTc, humanDuration } from '../lib/timecode.ts';
+
+function RateChips({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="chips">
+      {FRAME_RATES.map((r) => (
+        <button key={r.id} className={`chip ${r.id === value ? 'is-active' : ''}`} onClick={() => onChange(r.id)}>
+          {r.label.replace(' (PAL)', '')}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 function RateSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <select className="select" value={value} onChange={(e) => onChange(e.target.value)}>
-      {FRAME_RATES.map((r) => <option key={r.id} value={r.id}>{r.label} fps</option>)}
+      {FRAME_RATES.map((r) => <option key={r.id} value={r.id}>{r.label.replace(' (PAL)', '')}</option>)}
     </select>
   );
 }
 
-function TcInput({ value, onChange, valid, placeholder }: { value: string; onChange: (v: string) => void; valid: boolean; placeholder?: string }) {
+function TcInput({ value, onChange, valid }: { value: string; onChange: (v: string) => void; valid: boolean }) {
   return (
     <input
-      className={`input mono tc-input ${value && !valid ? 'is-invalid' : ''}`}
+      className={`input tc-input ${value && !valid ? 'is-invalid' : ''}`}
       value={value}
-      placeholder={placeholder ?? '00:00:00:00'}
+      placeholder="00:00:00:00"
       spellCheck={false}
       onChange={(e) => onChange(e.target.value)}
     />
@@ -49,55 +61,56 @@ export default function Timecode({ compact }: { compact?: boolean }) {
 
   return (
     <div className="widget timecode">
-      <Section title={compact ? undefined : t('tc.title')} right={<RateSelect value={rateId} onChange={setRateId} />}>
-        <div className="tc-calc">
-          <TcInput value={a} onChange={setA} valid={fa !== null} />
-          <div className="tc-op">
-            <Segmented value={op} onChange={setOp} options={[{ value: '+', label: '+' }, { value: '-', label: '−' }]} />
+      {compact ? (
+        <div className="row"><span className="mini-label grow">{t('tc.fps')}</span><RateSelect value={rateId} onChange={setRateId} /></div>
+      ) : (
+        <RateChips value={rateId} onChange={setRateId} />
+      )}
+
+      <div className="tc-stack">
+        <TcInput value={a} onChange={setA} valid={fa !== null} />
+        <div className="tc-op">
+          {(['+', '-'] as const).map((o) => (
+            <button key={o} className={op === o ? 'is-active' : ''} onClick={() => setOp(o)}>{o === '+' ? '+' : '−'}</button>
+          ))}
+        </div>
+        <TcInput value={b} onChange={setB} valid={fb !== null} />
+      </div>
+
+      <div className="hero">
+        <div className="hero-label">{t('tc.result')} · {rate.label.replace(' (PAL)', '')} fps</div>
+        <div className="hero-value mono">{result ? result.tc : '—'}</div>
+        {result && (
+          <div className="hero-meta">
+            <span>{result.frames.toLocaleString('ru-RU')} {t('tc.frames')}</span>
+            <span>·</span>
+            <span>{humanDuration(result.seconds)}</span>
           </div>
-          <TcInput value={b} onChange={setB} valid={fb !== null} />
-        </div>
-        <div className="result-card">
-          <div className="result-main mono">{result ? result.tc : '—'}</div>
-          {result && (
-            <div className="result-meta">
-              <span>{result.frames.toLocaleString('ru-RU')} {t('tc.frames')}</span>
-              <span>·</span>
-              <span>{humanDuration(result.seconds)}</span>
-              <CopyButton value={result.tc} />
-            </div>
-          )}
-          {result && (
-            <button className="link-btn" onClick={() => setA(result.tc)}>
-              <Icon name="arrowUp" size={13} /> A = natija
-            </button>
-          )}
-        </div>
-        {!compact && <p className="hint">{t('tc.hint')}</p>}
-      </Section>
+        )}
+        {result && (
+          <div className="hero-actions">
+            <button className="icon-btn" title="A = natija" onClick={() => setA(result.tc)}><Icon name="arrowUp" size={15} /></button>
+            <CopyButton value={result.tc} />
+          </div>
+        )}
+      </div>
 
       {!compact && (
         <>
+          <p className="hint" style={{ padding: '0 4px' }}>{t('tc.hint')}</p>
           <Section title={t('tc.framesToTc')}>
-            <div className="row">
-              <input className="input mono" value={frames} onChange={(e) => setFrames(e.target.value)} inputMode="numeric" />
-              <Icon name="swap" className="muted" />
-              <div className="output mono">
-                {framesTc ?? '—'}
-                {framesTc && <CopyButton value={framesTc} />}
-              </div>
+            <input className="input mono" value={frames} onChange={(e) => setFrames(e.target.value)} inputMode="numeric" />
+            <div className="output mono">
+              <span>{framesTc ?? '—'}</span>
+              {framesTc && <CopyButton value={framesTc} />}
             </div>
             {framesTc && <p className="hint">{t('tc.duration')}: {humanDuration(framesToSeconds(Math.round(framesNum), rate))}</p>}
           </Section>
 
-          <Section title={t('tc.convert')}>
-            <div className="row">
-              <TcInput value={convIn} onChange={setConvIn} valid={tcToFrames(convIn, rate) !== null} />
-              <span className="muted small">{rate.label} →</span>
-              <RateSelect value={toRate} onChange={setToRate} />
-            </div>
+          <Section title={t('tc.convert')} right={<span className="row-tight muted small">{rate.label.replace(' (PAL)', '')} → <RateSelect value={toRate} onChange={setToRate} /></span>}>
+            <TcInput value={convIn} onChange={setConvIn} valid={tcToFrames(convIn, rate) !== null} />
             <div className="output mono big">
-              {converted ?? '—'}
+              <span>{converted ?? '—'}</span>
               {converted && <CopyButton value={converted} />}
             </div>
           </Section>

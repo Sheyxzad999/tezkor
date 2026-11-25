@@ -4,7 +4,7 @@ import { useT, type Key } from '../i18n.ts';
 import { Section, Empty, Toggle } from '../components/ui.tsx';
 import { Icon } from '../components/Icon.tsx';
 import {
-  CITIES, PRAYER_KEYS, aladhanUrl, islomapiUrl, localDate, nextPrayer, formatCountdown,
+  CITIES, PRAYER_KEYS, aladhanUrl, islomapiUrl, localDate, nextPrayer, prayerProgress, formatCountdown,
   parseAladhan, parseIslomapi, type DayTimes,
 } from '../lib/prayer.ts';
 
@@ -22,6 +22,37 @@ export async function loadPrayerTimes(cityId: string, now = new Date()): Promise
 }
 
 export interface PrayerCache { city: string; data: DayTimes }
+
+/** Oldingi va keyingi namoz orasidagi yoy — nuqta quyosh kabi harakatlanadi */
+function Arc({ progress, size = 260 }: { progress: number; size?: number }) {
+  const w = size, h = size / 2 + 8, r = size / 2 - 14, cx = w / 2, cy = size / 2;
+  const a = Math.PI * (1 - progress);
+  const x = cx + r * Math.cos(a), y = cy - r * Math.sin(a);
+  const len = Math.PI * r;
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
+      <defs>
+        <linearGradient id="arc-g" x1="0" x2="1">
+          <stop offset="0" stopColor="var(--amber)" />
+          <stop offset="1" stopColor="var(--accent)" />
+        </linearGradient>
+        <radialGradient id="sun-g">
+          <stop offset="0" stopColor="#fff" />
+          <stop offset="0.5" stopColor="var(--accent-2)" />
+          <stop offset="1" stopColor="var(--accent)" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`} fill="none" stroke="var(--line-2)" strokeWidth="2" strokeDasharray="2 6" strokeLinecap="round" />
+      <path
+        d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
+        fill="none" stroke="url(#arc-g)" strokeWidth="3" strokeLinecap="round"
+        style={{ strokeDasharray: len, strokeDashoffset: len * (1 - progress), transition: 'stroke-dashoffset 1s var(--ease)' }}
+      />
+      <circle cx={x} cy={y} r="16" fill="url(#sun-g)" opacity="0.55" />
+      <circle cx={x} cy={y} r="6" fill="#fff" stroke="var(--accent)" strokeWidth="2.5" />
+    </svg>
+  );
+}
 
 export default function Prayer({ compact }: { compact?: boolean }) {
   const { t } = useT();
@@ -63,37 +94,50 @@ export default function Prayer({ compact }: { compact?: boolean }) {
   if (!data) {
     return (
       <div className="widget prayer">
-        <Section right={citySelect}>
-          <Empty>{error ? t('common.offline') : t('common.loading')}</Empty>
-        </Section>
+        <div className="row"><span className="grow" />{citySelect}</div>
+        <Empty>{error ? t('common.offline') : t('common.loading')}</Empty>
       </div>
     );
   }
 
   const np = nextPrayer(data.times, now);
   const label = (k: string) => t(`pr.${k}` as Key);
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const past = (hhmm: string) => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m <= nowMin; };
 
   return (
     <div className="widget prayer">
-      <Section title={compact ? undefined : t('pr.title')} right={citySelect}>
-        <div className="prayer-hero">
-          <span className="muted small">{t('pr.next')}</span>
-          <b>{label(np.next)} · <span className="mono">{data.times[np.next]}</span></b>
-          <div className="countdown mono">{formatCountdown(np.minutesLeft)}</div>
-          <span className="muted small">{t('pr.left')}{data.hijri ? ` · ${data.hijri}` : ''}</span>
+      <div className="row">
+        <span className="muted small grow">{data.hijri ?? ''}</span>
+        {citySelect}
+      </div>
+
+      <div className="hero">
+        <div className="arc-wrap">
+          <Arc progress={prayerProgress(data.times, now)} size={compact ? 220 : 268} />
+          <div className="arc-center">
+            <span className="lbl">{label(np.next)} · {data.times[np.next]}</span>
+            <span className="big">{formatCountdown(np.minutesLeft)}</span>
+            <span className="sub">{t('pr.left')}</span>
+          </div>
         </div>
-        <div className="prayer-list">
+      </div>
+
+      <Section>
+        <div className="timeline">
           {PRAYER_KEYS.map((k) => (
-            <div key={k} className={`prayer-item ${k === np.current && !np.tomorrow ? 'is-current' : ''} ${k === np.next ? 'is-next' : ''}`}>
-              <span>{label(k)}</span>
-              <b className="mono">{data.times[k]}</b>
+            <div key={k} className={`tl-item ${k === np.next ? 'is-next' : !np.tomorrow && past(data.times[k]) ? 'is-past' : ''}`}>
+              <i className="tl-dot" />
+              <span className="tl-name">{label(k)}</span>
+              <b className="tl-time mono">{data.times[k]}</b>
             </div>
           ))}
         </div>
       </Section>
+
       {!compact && (
         <Section>
-          <Toggle checked={notify} onChange={toggleNotify} label={<><Icon name="bell" size={15} /> {t('pr.notify')}</>} />
+          <Toggle checked={notify} onChange={toggleNotify} label={<><Icon name="bell" size={16} /> {t('pr.notify')}</>} />
           <p className="hint">{t(data.source === 'islomapi' ? 'pr.source.islomapi' : 'pr.source.aladhan')}</p>
         </Section>
       )}

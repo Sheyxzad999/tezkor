@@ -10,6 +10,11 @@ interface Cache { rates: Rate[]; fetchedAt: number }
 
 const fmt = (n: number, d = 2) => formatSum(Number(n.toFixed(d)), { currency: false, decimals: d });
 
+function Diff({ v }: { v: number }) {
+  if (!v) return <span className="badge">• 0</span>;
+  return <span className={`badge ${v > 0 ? 'up' : 'down'}`}>{v > 0 ? '▲' : '▼'} {fmt(Math.abs(v))}</span>;
+}
+
 export default function Currency({ compact }: { compact?: boolean }) {
   const { t, lang } = useT();
   const [cache, setCache] = useLocal<Cache | null>('currency.cache', null);
@@ -24,8 +29,7 @@ export default function Currency({ compact }: { compact?: boolean }) {
     setLoading(true);
     try {
       const res = await fetch(CBU_URL);
-      const rates = parseCbu(await res.json());
-      setCache({ rates, fetchedAt: Date.now() });
+      setCache({ rates: parseCbu(await res.json()), fetchedAt: Date.now() });
       setOffline(false);
     } catch {
       setOffline(true);
@@ -44,25 +48,38 @@ export default function Currency({ compact }: { compact?: boolean }) {
   const rates = cache.rates;
   const name = (r: Rate) => (lang === 'ru' ? r.name.ru : lang === 'en' ? r.name.en : r.name.uz);
   const shown = pinned.map((c) => rates.find((r) => r.code === c)).filter((r): r is Rate => !!r);
+  const [lead, ...rest] = shown;
   const num = Number(String(amount).replace(/\s/g, '').replace(',', '.'));
   const result = Number.isFinite(num) ? (toUzs ? convert(num, code, 'UZS', rates) : convert(num, 'UZS', code, rates)) : null;
+  const codeSelect = (
+    <select className="select inline" value={code} onChange={(e) => setCode(e.target.value)}>
+      {rates.map((r) => <option key={r.code}>{r.code}</option>)}
+    </select>
+  );
 
   return (
     <div className="widget currency">
-      <Section
-        title={compact ? undefined : t('cur.title')}
-        right={
-          <span className="muted small row-tight">
-            {rates[0]?.date}
+      {lead && (
+        <div className="hero">
+          <div className="fx-hero">
+            <div>
+              <div className="hero-label">{FLAGS[lead.code]} 1 {lead.code} · {lead.date}</div>
+              <div className="hero-value mono">{fmt(lead.rate)}<small>soʻm</small></div>
+            </div>
+            <Diff v={lead.diff} />
+          </div>
+          <div className="hero-actions">
             <button className="icon-btn" title={t('action.refresh')} onClick={load} disabled={loading}>
               <Icon name="refresh" size={14} className={loading ? 'spin' : ''} />
             </button>
-          </span>
-        }
-      >
-        {offline && <p className="hint warn">{t('common.offline')}</p>}
+          </div>
+        </div>
+      )}
+      {offline && <p className="hint warn">{t('common.offline')}</p>}
+
+      <Section>
         <div className="rates">
-          {shown.slice(0, compact ? 4 : undefined).map((r) => (
+          {rest.slice(0, compact ? 3 : undefined).map((r) => (
             <div key={r.code} className="rate" onClick={() => setCode(r.code)}>
               <span className="flag">{FLAGS[r.code] ?? '💱'}</span>
               <div className="rate-name">
@@ -71,9 +88,7 @@ export default function Currency({ compact }: { compact?: boolean }) {
               </div>
               <div className="rate-val">
                 <b className="mono">{fmt(r.rate)}</b>
-                <span className={`small mono ${r.diff > 0 ? 'up' : r.diff < 0 ? 'down' : 'muted'}`}>
-                  {r.diff > 0 ? '▲' : r.diff < 0 ? '▼' : '•'} {fmt(Math.abs(r.diff))}
-                </span>
+                <Diff v={r.diff} />
               </div>
               {!compact && (
                 <button className="icon-btn ghost" title="Olib tashlash" onClick={(e) => { e.stopPropagation(); setPinned(pinned.filter((p) => p !== r.code)); }}>
@@ -93,26 +108,25 @@ export default function Currency({ compact }: { compact?: boolean }) {
         )}
       </Section>
 
-      <Section title={compact ? undefined : t('cur.converter')}>
-        <div className="converter">
-          <input className="input mono" value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" />
-          <div className="conv-codes">
-            <span>{toUzs ? <select className="select inline" value={code} onChange={(e) => setCode(e.target.value)}>{rates.map((r) => <option key={r.code}>{r.code}</option>)}</select> : 'UZS'}</span>
-            <button className="icon-btn" onClick={() => setToUzs(!toUzs)} title="Almashtirish"><Icon name="swap" size={15} /></button>
-            <span>{toUzs ? 'UZS' : <select className="select inline" value={code} onChange={(e) => setCode(e.target.value)}>{rates.map((r) => <option key={r.code}>{r.code}</option>)}</select>}</span>
-          </div>
-        </div>
-        <div className="result-card">
-          <div className="result-main mono">{result === null ? '—' : fmt(result)} <small>{toUzs ? 'soʻm' : code}</small></div>
-          {result !== null && (
-            <div className="result-meta">
-              {toUzs && !compact && result < 1e15 && <span className="words">{sumToWords(Math.round(result), { script: lang === 'uz-cyrl' ? 'cyrl' : 'latn' })}</span>}
-              <CopyButton value={result.toFixed(2)} />
+      {!compact && (
+        <Section title={t('cur.converter')}>
+          <div className="converter">
+            <input className="input" value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" />
+            <div className="conv-codes">
+              <span>{toUzs ? codeSelect : 'UZS'}</span>
+              <button className="icon-btn solid" onClick={() => setToUzs(!toUzs)} title="Almashtirish"><Icon name="swap" size={14} /></button>
+              <span>{toUzs ? 'UZS' : codeSelect}</span>
             </div>
+          </div>
+          <div className="output big mono">
+            <span>{result === null ? '—' : fmt(result)} <small className="muted">{toUzs ? 'soʻm' : code}</small></span>
+            {result !== null && <CopyButton value={result.toFixed(2)} />}
+          </div>
+          {toUzs && result !== null && result < 1e15 && (
+            <div className="words">{sumToWords(Math.round(result), { script: lang === 'uz-cyrl' ? 'cyrl' : 'latn' })}</div>
           )}
-        </div>
-        {!compact && <p className="hint">{t('cur.source')} · cbu.uz</p>}
-      </Section>
+        </Section>
+      )}
     </div>
   );
 }

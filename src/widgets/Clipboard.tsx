@@ -4,6 +4,7 @@ import { useT } from '../i18n.ts';
 import { Section, Empty } from '../components/ui.tsx';
 import { Icon } from '../components/Icon.tsx';
 import { copyText, isTauri } from '../env.ts';
+import { demoClips } from '../demo.ts';
 import { detectKind, timeAgo, type ClipItem } from '../lib/clipboard.ts';
 
 const KIND_LABEL: Record<string, string> = {
@@ -12,7 +13,7 @@ const KIND_LABEL: Record<string, string> = {
 
 export default function Clipboard({ compact }: { compact?: boolean }) {
   const { t } = useT();
-  const [items, setItems] = useLocal<ClipItem[]>('clip.items', []);
+  const [items, setItems] = useLocal<ClipItem[]>('clip.items', isTauri ? [] : demoClips());
   const [paused, setPaused] = useLocal('clip.paused', false);
   const [q, setQ] = useState('');
   const now = useNow(30_000).getTime();
@@ -23,15 +24,14 @@ export default function Clipboard({ compact }: { compact?: boolean }) {
     return [...list.filter((i) => i.pinned), ...list.filter((i) => !i.pinned)];
   }, [items, q]);
 
-  if (!isTauri) return <Empty>{t('common.onlyApp')}</Empty>;
-
   const togglePin = (id: string) => setItems(items.map((i) => (i.id === id ? { ...i, pinned: !i.pinned } : i)));
   const remove = (id: string) => setItems(items.filter((i) => i.id !== id));
 
   return (
     <div className="widget clipboard">
       <Section
-        title={compact ? undefined : t('clip.title')}
+        plain
+        title={`${items.length} / 100`}
         right={
           <span className="row-tight">
             <button className={`icon-btn ${paused ? 'is-warn' : ''}`} title={paused ? t('clip.resume') : t('clip.pause')} onClick={() => setPaused(!paused)}>
@@ -63,7 +63,7 @@ export default function Clipboard({ compact }: { compact?: boolean }) {
                     <span className={kind === 'code' || kind === 'json' ? 'mono' : ''}>{i.text.trim().slice(0, 160)}</span>
                   </div>
                   <div className="clip-meta">
-                    <span className={`badge kind-${kind}`}>{KIND_LABEL[kind]}</span>
+                    <span className={`kind kind-${kind}`}>{KIND_LABEL[kind]}</span>
                     <span className="muted small">{timeAgo(i.at, now)}</span>
                     <span className="clip-actions">
                       <button className={`icon-btn ghost ${i.pinned ? 'is-active' : ''}`} onClick={(e) => { e.stopPropagation(); togglePin(i.id); }}>
@@ -79,7 +79,6 @@ export default function Clipboard({ compact }: { compact?: boolean }) {
             })}
           </div>
         )}
-        {!compact && <p className="hint">{t('clip.local')}</p>}
       </Section>
     </div>
   );

@@ -3,7 +3,7 @@ import { useInterval } from '../hooks.ts';
 import { useT } from '../i18n.ts';
 import { Section, Ring, Sparkline, Empty } from '../components/ui.tsx';
 import { Icon } from '../components/Icon.tsx';
-import { invoke, isTauri } from '../env.ts';
+import { invoke } from '../env.ts';
 
 interface Disk { name: string; mount: string; total: number; available: number; removable: boolean }
 interface Stats {
@@ -25,7 +25,8 @@ function uptimeText(s: number) {
   return [d && `${d} kun`, h && `${h} soat`, `${m} daq`].filter(Boolean).join(' ');
 }
 
-const level = (p: number) => (p > 85 ? 'var(--danger)' : p > 65 ? 'var(--warn)' : 'var(--accent)');
+const barColor = (p: number) =>
+  p > 88 ? 'var(--danger)' : 'linear-gradient(90deg, var(--amber), var(--accent))';
 
 export default function Monitor({ compact }: { compact?: boolean }) {
   const { t } = useT();
@@ -36,7 +37,6 @@ export default function Monitor({ compact }: { compact?: boolean }) {
   const [txH, setTxH] = useState<number[]>([]);
 
   useInterval(async () => {
-    if (!isTauri) return;
     try {
       const n = await invoke<Stats>('system_stats');
       setS(n);
@@ -47,57 +47,61 @@ export default function Monitor({ compact }: { compact?: boolean }) {
     } catch (e) {
       setErr(String(e));
     }
-  }, 1500);
+  }, 1200);
 
-  if (!isTauri) return <Empty>{t('common.onlyApp')}</Empty>;
   if (err) return <Empty>{t('common.error')}: {err}</Empty>;
   if (!s) return <Empty>{t('common.loading')}</Empty>;
 
   const memPct = (s.memUsed / s.memTotal) * 100;
+  const ringSize = compact ? 84 : 104;
 
   return (
     <div className="widget monitor">
-      <Section title={compact ? undefined : t('mon.title')} right={!compact && s.host ? <span className="muted small">{s.host}</span> : undefined}>
-        <div className="rings">
-          <Ring value={s.cpu} label={t('mon.cpu')} sub={`${s.cores.length} yadro`} color={level(s.cpu)} />
-          <Ring value={memPct} label={t('mon.ram')} sub={`${bytes(s.memUsed)} / ${bytes(s.memTotal)}`} color={level(memPct)} />
-        </div>
-        {!compact && <Sparkline data={cpuH} color={level(s.cpu)} />}
-      </Section>
+      <div className="rings">
+        <Section className="ring-card">
+          <Ring value={s.cpu} size={ringSize} danger={s.cpu > 88} />
+          <span className="ring-label">{t('mon.cpu')}</span>
+          <span className="ring-sub">{s.cores.length} {t('mon.cores')}</span>
+        </Section>
+        <Section className="ring-card">
+          <Ring value={memPct} size={ringSize} danger={memPct > 88} />
+          <span className="ring-label">{t('mon.ram')}</span>
+          <span className="ring-sub">{bytes(s.memUsed)} / {bytes(s.memTotal)}</span>
+        </Section>
+      </div>
 
-      <Section title={compact ? undefined : t('mon.net')}>
+      {!compact && (
+        <Section title={`${t('mon.cpu')} · 60 s`} right={<span className="mono small muted">{s.cpu.toFixed(0)}%</span>}>
+          <Sparkline data={cpuH} height={56} color="var(--accent)" />
+          {s.cores.length > 1 && (
+            <div className="cores">
+              {s.cores.map((c, i) => (
+                <div key={i} className="core" title={`#${i + 1}: ${c.toFixed(0)}%`}>
+                  <i style={{ height: `${Math.max(6, c)}%`, background: c > 88 ? 'var(--danger)' : 'linear-gradient(0deg, var(--accent), var(--amber))' }} />
+                </div>
+              ))}
+            </div>
+          )}
+        </Section>
+      )}
+
+      <Section>
         <div className="net">
-          <div className="net-item down">
-            <Icon name="arrowDown" size={15} />
+          <div className="net-tile">
+            <div className="row"><i className="net-dot" style={{ background: 'var(--accent)' }} /><span className="lbl">{t('mon.down')}</span></div>
             <b className="mono">{bytes(s.netRx, true)}</b>
+            {!compact && <Sparkline data={rxH} max={1} height={30} color="var(--accent)" />}
           </div>
-          <div className="net-item up">
-            <Icon name="arrowUp" size={15} />
+          <div className="net-tile">
+            <div className="row"><i className="net-dot" style={{ background: 'var(--amber)' }} /><span className="lbl">{t('mon.up')}</span></div>
             <b className="mono">{bytes(s.netTx, true)}</b>
+            {!compact && <Sparkline data={txH} max={1} height={30} color="var(--amber)" />}
           </div>
         </div>
-        {!compact && (
-          <div className="net-graphs">
-            <Sparkline data={rxH} max={1} height={32} color="var(--accent)" />
-            <Sparkline data={txH} max={1} height={32} color="var(--accent-2)" />
-          </div>
-        )}
       </Section>
 
       {!compact && (
         <>
-          {s.cores.length > 1 && (
-            <Section title="Yadrolar">
-              <div className="cores">
-                {s.cores.map((c, i) => (
-                  <div key={i} className="core" title={`#${i + 1}: ${c.toFixed(0)}%`}>
-                    <i style={{ height: `${Math.max(4, c)}%`, background: level(c) }} />
-                  </div>
-                ))}
-              </div>
-            </Section>
-          )}
-
           <Section title={t('mon.disks')}>
             {s.disks.map((d) => {
               const used = d.total - d.available;
@@ -105,17 +109,18 @@ export default function Monitor({ compact }: { compact?: boolean }) {
               return (
                 <div key={d.mount} className="disk">
                   <div className="disk-head">
-                    <b>{d.name || d.mount}</b>
-                    <span className="muted small">{bytes(d.available)} {t('mon.free')}</span>
+                    <b className="row-tight"><Icon name="monitor" size={13} /> {d.name || d.mount}</b>
+                    <span className="muted small mono">{bytes(d.available)} {t('mon.free')}</span>
                   </div>
-                  <div className="bar"><i style={{ width: `${pct}%`, background: level(pct) }} /></div>
-                  <div className="muted small">{bytes(used)} / {bytes(d.total)} · {d.mount}</div>
+                  <div className="bar"><i style={{ width: `${pct}%`, background: barColor(pct) }} /></div>
+                  <div className="muted small">{bytes(used)} / {bytes(d.total)}</div>
                 </div>
               );
             })}
           </Section>
-
-          <p className="hint">{t('mon.uptime')}: {uptimeText(s.uptime)}{s.os ? ` · ${s.os}` : ''}</p>
+          <p className="hint" style={{ padding: '0 4px' }}>
+            {s.host ? `${s.host} · ` : ''}{s.os ? `${s.os} · ` : ''}{t('mon.uptime')}: {uptimeText(s.uptime)}
+          </p>
         </>
       )}
     </div>
