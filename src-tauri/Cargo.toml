@@ -5,7 +5,6 @@ description = "Tezkor — dasturchi, montajchi va har kun uchun vidjetlar"
 authors = ["Shaxzod <https://sheyxzad.uz>"]
 license = "MIT"
 edition = "2021"
-rust-version = "1.77"
 
 [lib]
 name = "tezkor_lib"

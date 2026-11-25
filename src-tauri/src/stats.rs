@@ -73,10 +73,11 @@ pub fn system_stats(state: tauri::State<'_, StatsState>) -> Result<SystemStats, 
     s.sys.refresh_cpu_usage();
     s.sys.refresh_memory();
     s.nets.refresh(true);
-    if s.tick % 10 == 0 {
+    // Disklar sekin oʻzgaradi — har 10-chaqiruvda yangilaymiz
+    if s.tick == 0 {
         s.disks.refresh(true);
     }
-    s.tick = s.tick.wrapping_add(1);
+    s.tick = (s.tick + 1) % 10;
 
     let elapsed = s.last.elapsed().as_secs_f64().max(0.001);
     s.last = Instant::now();
@@ -103,7 +104,7 @@ pub fn system_stats(state: tauri::State<'_, StatsState>) -> Result<SystemStats, 
 
     Ok(SystemStats {
         cpu: s.sys.global_cpu_usage(),
-        cores: s.sys.cpus().iter().map(|c| c.cpu_usage()).collect(),
+        cores: s.sys.cpus().iter().map(|c| c.usage()).collect(),
         mem_used: s.sys.used_memory(),
         mem_total: s.sys.total_memory(),
         swap_used: s.sys.used_swap(),

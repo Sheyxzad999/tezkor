@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="440" viewBox="0 0 1280 440">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="1" stop-color="#0f1d2e"/>
+    </linearGradient>
+    <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#22c3e6"/>
+      <stop offset="1" stop-color="#3ddc6f"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.78" cy="0.35" r="0.65">
+      <stop offset="0" stop-color="#22c3e6" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#22c3e6" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#ffffff" fill-opacity="0.06"/>
+    </pattern>
+    <clipPath id="frame"><rect width="1280" height="440" rx="24"/></clipPath>
+    <filter id="sh" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#000" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <g clip-path="url(#frame)">
+    <rect width="1280" height="440" fill="url(#bg)"/>
+    <rect width="1280" height="440" fill="url(#dots)"/>
+    <rect width="1280" height="440" fill="url(#glow)"/>
+    <rect x="0" y="428" width="1280" height="4" fill="#0099b5"/>
+    <rect x="0" y="432" width="1280" height="1.5" fill="#ce1126"/>
+    <rect x="0" y="433.5" width="1280" height="6.5" fill="#1eb53a"/>
+  </g>
+
+  <!-- chap: nom -->
+  <g font-family="'SF Pro Display','Segoe UI',Inter,Helvetica,Arial,sans-serif">
+    <g transform="translate(80,96)">
+      <rect width="56" height="56" rx="14" fill="url(#grad)"/>
+      <path d="M32 9 L17 32 H28 L25 48 L40 25 H29 Z" fill="#fff"/>
+      <text x="72" y="25" font-size="16" fill="#8aa4bf" letter-spacing="3" font-weight="600">MAC · WINDOWS</text>
+      <text x="72" y="47" font-size="16" fill="#8aa4bf" letter-spacing="3" font-weight="600">OPEN SOURCE</text>
+    </g>
+    <text x="76" y="250" font-size="112" font-weight="800" fill="url(#grad)" letter-spacing="-4">Tezkor</text>
+    <text x="82" y="300" font-size="26" fill="#e6edf3" font-weight="500">Har kuni kerak boʻladigan vidjetlar</text>
+    <text x="82" y="338" font-size="18" fill="#8aa4bf">Dasturchi · montajchi · har bir foydalanuvchi uchun</text>
+    <g transform="translate(82,364)" font-size="15" fill="#8aa4bf">
+      <rect width="104" height="30" rx="8" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.12"/>
+      <text x="14" y="20" font-family="'SF Mono',Menlo,monospace" fill="#e6edf3">⌥ Space</text>
+      <text x="118" y="20">— istalgan joydan oching</text>
+    </g>
+  </g>
+
+  <!-- oʻng: vidjet kartalari -->
+  <g font-family="'SF Pro Display','Segoe UI',Inter,Helvetica,Arial,sans-serif" filter="url(#sh)">
+    <!-- Timecode -->
+    <g transform="translate(640,58)">
+      <rect width="300" height="150" rx="18" fill="#141b27" stroke="#ffffff" stroke-opacity="0.1"/>
+      <text x="20" y="34" font-size="12" fill="#8aa4bf" letter-spacing="1.5" font-weight="700">TIMECODE · 25 FPS</text>
+      <rect x="20" y="52" width="260" height="76" rx="12" fill="url(#grad)" fill-opacity="0.16" stroke="#22c3e6" stroke-opacity="0.35"/>
+      <text x="36" y="96" font-family="'SF Mono',Menlo,monospace" font-size="30" font-weight="700" fill="#e6edf3">00:01:42:10</text>
+      <text x="36" y="118" font-size="12" fill="#8aa4bf">2 560 kadr · 1 daq 42.4 s</text>
+    </g>
+    <!-- Monitor -->
+    <g transform="translate(960,58)">
+      <rect width="250" height="150" rx="18" fill="#141b27" stroke="#ffffff" stroke-opacity="0.1"/>
+      <text x="20" y="34" font-size="12" fill="#8aa4bf" letter-spacing="1.5" font-weight="700">TIZIM</text>
+      <g transform="translate(66,92)">
+        <circle r="34" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="8"/>
+        <circle r="34" fill="none" stroke="#22c3e6" stroke-width="8" stroke-linecap="round" stroke-dasharray="213.6" stroke-dashoffset="128" transform="rotate(-90)"/>
+        <text y="6" text-anchor="middle" font-size="18" font-weight="700" fill="#e6edf3">40%</text>
+        <text y="52" text-anchor="middle" font-size="11" fill="#8aa4bf">CPU</text>
+      </g>
+      <g transform="translate(176,92)">
+        <circle r="34" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="8"/>
+        <circle r="34" fill="none" stroke="#3ddc6f" stroke-width="8" stroke-linecap="round" stroke-dasharray="213.6" stroke-dashoffset="68" transform="rotate(-90)"/>
+        <text y="6" text-anchor="middle" font-size="18" font-weight="700" fill="#e6edf3">68%</text>
+        <text y="52" text-anchor="middle" font-size="11" fill="#8aa4bf">RAM</text>
+      </g>
+    </g>
+    <!-- Rang -->
+    <g transform="translate(640,226)">
+      <rect width="170" height="160" rx="18" fill="#141b27" stroke="#ffffff" stroke-opacity="0.1"/>
+      <text x="20" y="34" font-size="12" fill="#8aa4bf" letter-spacing="1.5" font-weight="700">RANG</text>
+      <rect x="20" y="50" width="130" height="64" rx="10" fill="#7C5CFF"/>
+      <text x="85" y="88" text-anchor="middle" font-family="'SF Mono',Menlo,monospace" font-size="15" font-weight="700" fill="#fff">#7C5CFF</text>
+      <g transform="translate(20,128)">
+        <rect width="18" height="18" rx="5" fill="#22C3E6"/><rect x="24" width="18" height="18" rx="5" fill="#3DDC6F"/>
+        <rect x="48" width="18" height="18" rx="5" fill="#F5B942"/><rect x="72" width="18" height="18" rx="5" fill="#FF6B6B"/>
+        <rect x="96" width="18" height="18" rx="5" fill="#E6EDF3"/>
+      </g>
+    </g>
+    <!-- Valyuta -->
+    <g transform="translate(828,226)">
+      <rect width="200" height="160" rx="18" fill="#141b27" stroke="#ffffff" stroke-opacity="0.1"/>
+      <text x="20" y="34" font-size="12" fill="#8aa4bf" letter-spacing="1.5" font-weight="700">CBU KURSI</text>
+      <g font-size="14" fill="#e6edf3">
+        <text x="20" y="70">🇺🇸 USD</text><text x="180" y="70" text-anchor="end" font-family="'SF Mono',Menlo,monospace">11 990,54</text>
+        <text x="20" y="100">🇪🇺 EUR</text><text x="180" y="100" text-anchor="end" font-family="'SF Mono',Menlo,monospace">13 842,10</text>
+        <text x="20" y="130">🇷🇺 RUB</text><text x="180" y="130" text-anchor="end" font-family="'SF Mono',Menlo,monospace">151,37</text>
+      </g>
+    </g>
+    <!-- Namoz -->
+    <g transform="translate(1046,226)">
+      <rect width="164" height="160" rx="18" fill="#141b27" stroke="#ffffff" stroke-opacity="0.1"/>
+      <text x="20" y="34" font-size="12" fill="#8aa4bf" letter-spacing="1.5" font-weight="700">NAMOZ</text>
+      <text x="82" y="70" text-anchor="middle" font-size="13" fill="#3ddc6f" font-weight="600">Asr · 15:17</text>
+      <text x="82" y="108" text-anchor="middle" font-family="'SF Mono',Menlo,monospace" font-size="28" font-weight="700" fill="#e6edf3">42:15</text>
+      <text x="82" y="134" text-anchor="middle" font-size="11" fill="#8aa4bf">qoldi · Toshkent</text>
+    </g>
+  </g>
+</svg>
